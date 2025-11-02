@@ -1,0 +1,161 @@
+name: CI (validate, build, artifact)
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*' # dispara release para tags vX.Y.Z
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate (lint / type-check / test / build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.5'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci || npm install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+  migrations:
+    name: Migrations (Mongo ephemeral)
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd="mongosh --eval 'db.adminCommand({ ping: 1 })'"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    env:
+      MONGO_URI: mongodb://127.0.0.1:27017
+      MONGO_DBNAME: ci_db
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.5'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci || npm install
+
+      - name: Install netcat (for wait loop)
+        run: sudo apt-get update && sudo apt-get install -y netcat-openbsd
+
+      - name: Wait for Mongo (health)
+        run: |
+          for i in {1..40}; do
+            if nc -z 127.0.0.1 27017; then echo "Mongo up"; exit 0; fi
+            echo "Waiting Mongo..."; sleep 3
+          done
+          echo "Mongo did not become ready in time" >&2
+          exit 1
+
+      - name: Show migrate status
+        run: npm run migrate:status
+
+      - name: Run migrate up (from scratch)
+        run: npm run migrate:up
+
+  package:
+    name: Package artifact (only main & tags)
+    needs: [validate, migrations]
+    if: |
+      github.event_name == 'push' &&
+      (startsWith(github.ref, 'refs/heads/main') || startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-latest
+    env:
+      ARTIFACT_NAME: app-${{ github.sha }}.tar.gz
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.5'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci || npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Create artifact bundle
+        run: |
+          mkdir -p .bundle
+          cp -R dist .bundle/dist
+          cp package.json .bundle/
+          # copie aqui outros arquivos necessários em runtime (ex.: tsconfig, scripts, README, etc.)
+          tar -czf "${ARTIFACT_NAME}" -C .bundle .
+          ls -lh "${ARTIFACT_NAME}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.ARTIFACT_NAME }}
+          if-no-files-found: error
+
+  release:
+    name: Attach artifact to GitHub Release (only tags v*)
+    needs: package
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      ARTIFACT_NAME: app-${{ github.sha }}.tar.gz
+    steps:
+      - name: Download artifact from previous job
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: .
+
+      - name: Create GitHub Release & upload asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.ARTIFACT_NAME }}
+          generate_release_notes: true
