@@ -28,22 +28,28 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.19.5'
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
 
       - name: Install deps
-        run: npm ci || npm install
+        run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: npm run lint
+        run: pnpm lint
 
       - name: Type check
-        run: npm run type-check
+        run: pnpm type-check
 
       - name: Test
-        run: npm test
+        run: pnpm test
 
       - name: Build
-        run: npm run build
+        run: pnpm build
 
   migrations:
     name: Migrations (Mongo ephemeral)
@@ -74,10 +80,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.19.5'
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
 
       - name: Install deps
-        run: npm ci || npm install
+        run: pnpm install --frozen-lockfile
 
       - name: Install netcat (for wait loop)
         run: sudo apt-get update && sudo apt-get install -y netcat-openbsd
@@ -92,10 +104,10 @@ jobs:
           exit 1
 
       - name: Show migrate status
-        run: npm run migrate:status
+        run: pnpm migrate:status
 
       - name: Run migrate up (from scratch)
-        run: npm run migrate:up
+        run: pnpm migrate:up
 
   package:
     name: Package artifact (only main & tags)
@@ -114,19 +126,25 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.19.5'
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
 
       - name: Install deps
-        run: npm ci || npm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: npm run build
+        run: pnpm build
 
       - name: Create artifact bundle
         run: |
           mkdir -p .bundle
           cp -R dist .bundle/dist
-          cp package.json .bundle/
+          cp package.json pnpm-lock.yaml .bundle/ || true
           # copie aqui outros arquivos necessários em runtime (ex.: tsconfig, scripts, README, etc.)
           tar -czf "${ARTIFACT_NAME}" -C .bundle .
           ls -lh "${ARTIFACT_NAME}"
