@@ -12,12 +12,12 @@ Este projeto utiliza `migrate-mongo` para gerenciar migrações do banco de dado
 Para criar uma nova migration, use o comando:
 
 ```bash
-npx migrate-mongo create nome-da-migration
+pnpm migrate:create nome-da-migration
 ```
 
 **Exemplo:**
 ```bash
-npx migrate-mongo create primeira-tabela
+pnpm migrate:create primeira-tabela
 ```
 
 Este comando criará um arquivo em `migrations/` com o seguinte formato:
@@ -46,9 +46,9 @@ module.exports = {
 ### Ver Status das Migrações
 
 ```bash
-npm run migrate:status
+pnpm migrate:status
 # ou
-npx migrate-mongo status
+pnpm migrate-mongo status
 ```
 
 Mostra quais migrações foram aplicadas e quais estão pendentes.
@@ -56,9 +56,9 @@ Mostra quais migrações foram aplicadas e quais estão pendentes.
 ### Executar Migrações Pendentes
 
 ```bash
-npm run migrate:up
+pnpm migrate:up
 # ou
-npx migrate-mongo up
+pnpm migrate-mongo up
 ```
 
 Executa todas as migrações que ainda não foram aplicadas.
@@ -66,9 +66,9 @@ Executa todas as migrações que ainda não foram aplicadas.
 ### Reverter Última Migration
 
 ```bash
-npm run migrate:down
+pnpm migrate:down
 # ou
-npx migrate-mongo down
+pnpm migrate-mongo down
 ```
 
 Reverte a última migration executada.
@@ -76,9 +76,9 @@ Reverte a última migration executada.
 ### Criar Nova Migration
 
 ```bash
-npm run migrate:create nome-da-migration
+pnpm migrate:create nome-da-migration
 # ou
-npx migrate-mongo create nome-da-migration
+pnpm migrate-mongo create nome-da-migration
 ```
 
 ## 📚 Exemplo Prático
@@ -86,7 +86,7 @@ npx migrate-mongo create nome-da-migration
 ### Criando uma Migration
 
 ```bash
-npx migrate-mongo create primeira-tabela
+pnpm migrate-mongo create primeira-tabela
 ```
 
 Isso cria um arquivo como: `migrations/1234567890-primeira-tabela.js`
@@ -111,7 +111,7 @@ module.exports = {
 ### Executando
 
 ```bash
-npm run migrate:up
+pnpm migrate:up
 ```
 
 ## ⚙️ Configuração
@@ -135,7 +135,7 @@ Configure no `.env`:
 MIGRATIONS=true
 ```
 
-Ao executar `npm run start`, o script `scripts/start-with-migrations.js` executará as migrações antes de iniciar a aplicação.
+Ao executar `pnpm start`, o script `scripts/start-with-migrations.js` executará as migrações antes de iniciar a aplicação.
 
 ## ⚠️ Notas Importantes
 

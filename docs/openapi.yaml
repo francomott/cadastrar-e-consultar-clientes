@@ -1,0 +1,641 @@
+openapi: 3.0.3
+info:
+  title: Clientes API
+  version: 1.0.0
+  description: API para gerenciamento de clientes, produtos e estágios
+servers:
+  - url: http://localhost:3000
+    description: Servidor local
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    Address:
+      type: object
+      required:
+        - postalCode
+      properties:
+        postalCode:
+          type: string
+          description: CEP do endereço
+        street:
+          type: string
+        complement:
+          type: string
+        unit:
+          type: string
+        district:
+          type: string
+        city:
+          type: string
+        stateCode:
+          type: string
+        state:
+          type: string
+        region:
+          type: string
+    
+    Product:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        value:
+          type: number
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    
+    StageHistory:
+      type: object
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+        at:
+          type: string
+          format: date-time
+        by:
+          type: string
+        note:
+          type: string
+    
+    Customer:
+      type: object
+      properties:
+        _id:
+          type: string
+        document:
+          type: string
+        person:
+          type: string
+          enum: [F, J]
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        active:
+          type: boolean
+        address:
+          $ref: '#/components/schemas/Address'
+        stage:
+          type: string
+        stageChangedAt:
+          type: string
+          format: date-time
+        stageHistory:
+          type: array
+          items:
+            $ref: '#/components/schemas/StageHistory'
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    
+    CreateCustomer:
+      type: object
+      required:
+        - document
+        - person
+        - name
+        - email
+        - phone
+        - address
+      properties:
+        document:
+          type: string
+          description: CPF ou CNPJ do cliente
+        person:
+          type: string
+          enum: [F, J]
+          description: F para Pessoa Física ou J para Pessoa Jurídica
+        name:
+          type: string
+          description: Nome do cliente
+        email:
+          type: string
+          format: email
+          description: Email do cliente
+        phone:
+          type: string
+          description: Telefone do cliente
+        address:
+          type: object
+          required:
+            - postalCode
+          properties:
+            postalCode:
+              type: string
+              description: CEP do endereço
+            street:
+              type: string
+            complement:
+              type: string
+            unit:
+              type: string
+            district:
+              type: string
+            city:
+              type: string
+            stateCode:
+              type: string
+            state:
+              type: string
+            region:
+              type: string
+    
+    UpdateCustomer:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        address:
+          $ref: '#/components/schemas/Address'
+    
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+
+tags:
+  - name: Health
+    description: Healthcheck endpoints
+  - name: Auth
+    description: Autenticação e autorização
+  - name: Customers
+    description: Gerenciamento de clientes
+  - name: Products
+    description: Gerenciamento de produtos dos clientes
+  - name: Stages
+    description: Gerenciamento de estágios dos clientes
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Healthcheck
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+  
+  /auth/token:
+    get:
+      tags:
+        - Auth
+      summary: Gerar token JWT
+      responses:
+        '200':
+          description: Token gerado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token_type:
+                    type: string
+                  access_token:
+                    type: string
+  
+  /customers:
+    get:
+      tags:
+        - Customers
+      summary: Listar todos os clientes ativos
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de clientes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Customer'
+    
+    post:
+      tags:
+        - Customers
+      summary: Criar novo cliente
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomer'
+            example:
+              document: "12345678900"
+              person: "F"
+              name: "João da Silva"
+              email: "joao@example.com"
+              phone: "11987654321"
+              address:
+                postalCode: "01310100"
+      responses:
+        '201':
+          description: Cliente criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          description: Dados inválidos ou cliente já existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /customers/search:
+    get:
+      tags:
+        - Customers
+      summary: Buscar clientes por nome ou email
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resultados da busca
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Customer'
+  
+  /customers/stage/{stage}:
+    get:
+      tags:
+        - Customers
+      summary: Listar clientes por estágio
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: stage
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de clientes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Customer'
+  
+  /customers/document/{document}:
+    get:
+      tags:
+        - Customers
+      summary: Buscar cliente por documento
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: document
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cliente encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '404':
+          description: Cliente não encontrado
+  
+  /customers/{id}:
+    get:
+      tags:
+        - Customers
+      summary: Buscar cliente por ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cliente encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '404':
+          description: Cliente não encontrado
+    
+    patch:
+      tags:
+        - Customers
+      summary: Atualizar cliente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomer'
+      responses:
+        '200':
+          description: Cliente atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Cliente não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags:
+        - Customers
+      summary: Excluir cliente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Cliente excluído
+  
+  /customers/{id}/inactivate:
+    patch:
+      tags:
+        - Customers
+      summary: Inativar cliente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cliente inativado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+  
+  /customers/{customerId}/products:
+    get:
+      tags:
+        - Products
+      summary: Listar produtos de um cliente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de produtos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+    
+    post:
+      tags:
+        - Products
+      summary: Adicionar produto ao cliente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - value
+              properties:
+                name:
+                  type: string
+                  maxLength: 120
+                value:
+                  type: number
+                  minimum: 0
+            example:
+              name: "Produto Exemplo"
+              value: 100.50
+      responses:
+        '201':
+          description: Produto adicionado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+  
+  /customers/{customerId}/products/{productId}:
+    patch:
+      tags:
+        - Products
+      summary: Atualizar produto do cliente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '200':
+          description: Produto atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+    
+    delete:
+      tags:
+        - Products
+      summary: Remover produto do cliente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Produto removido
+  
+  /customers/{customerId}/stage:
+    get:
+      tags:
+        - Stages
+      summary: Obter estágio atual do cliente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Estágio atual
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stage:
+                    type: string
+                  stageChangedAt:
+                    type: string
+                    format: date-time
+    
+    post:
+      tags:
+        - Stages
+      summary: Alterar estágio do cliente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                to:
+                  type: string
+                note:
+                  type: string
+      responses:
+        '200':
+          description: Estágio alterado
+  
+  /customers/{customerId}/stage/history:
+    get:
+      tags:
+        - Stages
+      summary: Obter histórico de mudanças de estágio
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Histórico de estágios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StageHistory'

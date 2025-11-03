@@ -48,7 +48,8 @@ Cria GitHub Release com artifact anexado.
 ## Configuração
 
 **Node.js**: 20.19.5 (`.nvmrc`)  
-**TypeScript**: ES2022, CommonJS → `dist/`  
+**TypeScript**: ES2020, CommonJS → `dist/`  
+**Framework**: Express.js  
 **MongoDB CI**: `mongo:7`, porta 27017
 
 **Concurrency**: Workflows anteriores são cancelados quando novo commit/push ocorre para mesma branch/tag.

@@ -1,0 +1,57 @@
+{
+    "_id": "67266d9c1f0a4f7a9b8a1234",
+    "document": "12345678909",
+    "person": "F",
+    "name": "Franco Motta",
+    "email": "franco@example.com",
+    "phone": "5561999990000",
+    "active": true,
+  
+    "address": {
+    "postalCode": "71680349",
+    "street": "Condomínio Solar de Brasília",
+    "complement": "",
+    "unit": "",
+    "district": "Setor Habitacional Jardim Botânico",
+    "city": "Brasília",
+    "stateCode": "DF",
+    "state": "Distrito Federal",
+    "region": "Centro-Oeste"
+    },
+  
+    "stage": "NEGOCIACAO",
+    "stageChangedAt": "2025-11-02T16:05:12.000Z",
+    "stageHistory": [
+      {
+        "from": "LEAD",
+        "to": "NEGOCIACAO",
+        "at": "2025-11-02T16:05:12.000Z",
+        "by": "user:123",
+        "note": "Contato inicial concluído."
+      }
+    ],
+  
+    "products": [
+      {
+        "_id": "67266dbc1f0a4f7a9b8a2001",
+        "name": "Plano Premium",
+        "value": 199.9,
+        "active": true,
+        "createdAt": "2025-11-02T16:05:12.000Z",
+        "updatedAt": "2025-11-02T16:05:12.000Z"
+      },
+      {
+        "_id": "67266dbc1f0a4f7a9b8a2002",
+        "name": "Suporte Avançado",
+        "value": 49.9,
+        "active": true,
+        "createdAt": "2025-11-02T16:05:12.000Z",
+        "updatedAt": "2025-11-02T16:05:12.000Z"
+      }
+    ],
+  
+    "createdAt": "2025-11-02T16:05:12.000Z",
+    "updatedAt": "2025-11-02T16:05:12.000Z",
+    "__v": 0
+  }
+  

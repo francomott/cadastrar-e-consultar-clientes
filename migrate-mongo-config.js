@@ -1,18 +1,12 @@
 const { URL } = require('url');
 
 const mongoUri = process.env.MONGO_URI;
-const u = new URL(mongoUri);
-const databaseName = (u.pathname || '').replace(/^\//, '');
-const url = `${u.protocol}//${u.host}`; 
 
 module.exports = {
   mongodb: {
-    url,
-    databaseName,
-    options: {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
+    url: mongoUri,
+    databaseName: 'crm',
+    options: {}
   },
   migrationsDir: "migrations",
   changelogCollectionName: "changelog",

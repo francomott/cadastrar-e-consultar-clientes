@@ -1,22 +1,29 @@
 {
 	"dependencies": {
-		"@nestjs/common": "^11.1.8",
-		"@nestjs/config": "^4.0.2",
-		"@nestjs/core": "^11.1.8",
-		"@nestjs/platform-express": "^11.1.8",
 		"amqplib": "^0.10.9",
+		"axios": "^1.13.1",
 		"cors": "^2.8.5",
+		"dotenv": "^17.2.3",
+		"express": "^5.1.0",
 		"helmet": "^8.1.0",
+		"jsonwebtoken": "^9.0.2",
 		"mongoose": "^8.19.2",
+		"passport": "^0.7.0",
+		"passport-jwt": "^4.0.1",
 		"redis": "^5.9.0",
-		"reflect-metadata": "^0.2.2",
-		"rxjs": "^7.8.2"
+		"swagger-ui-express": "^5.0.1",
+		"yaml": "^2.8.1"
 	},
 	"devDependencies": {
-		"@nestjs/cli": "^11.0.10",
+		"@types/amqplib": "^0.10.8",
+		"@types/axios": "^0.14.4",
 		"@types/express": "^5.0.5",
 		"@types/jest": "^30.0.0",
+		"@types/jsonwebtoken": "^9.0.10",
 		"@types/node": "^24.9.2",
+		"@types/passport": "^1.0.17",
+		"@types/passport-jwt": "^4.0.1",
+		"@types/swagger-ui-express": "^4.1.8",
 		"@typescript-eslint/eslint-plugin": "^8.46.2",
 		"@typescript-eslint/parser": "^8.46.2",
 		"eslint": "^9.39.0",
@@ -28,19 +35,17 @@
 		"typescript": "^5.9.3"
 	},
 	"scripts": {
-		
 		"lint": "eslint . --ext .ts --max-warnings=0",
 		"type-check": "tsc -p tsconfig.json --noEmit",
-		
 		"test": "echo \"No tests yet\" && exit 0",
-		"dev": "ts-node-dev --respawn --transpileOnly src/main.ts",
+		"dev": "ts-node-dev --respawn --transpile-only src/server.ts",
 		"build": "tsc -p tsconfig.json",
-		"start:app": "node dist/main.js",
+		"start:app": "node dist/server.js",
 		"start": "node --env-file=.env scripts/start-with-migrations.js",
-
 		"migrate:create": "npx migrate-mongo create",
 		"migrate:up": "npx migrate-mongo up",
 		"migrate:down": "npx migrate-mongo down",
 		"migrate:status": "npx migrate-mongo status"
-	}
+	},
+	"packageManager": "pnpm@10.20.0+sha512.cf9998222162dd85864d0a8102e7892e7ba4ceadebbf5a31f9c2fce48dfce317a9c53b9f6464d1ef9042cba2e02ae02a9f7c143a2b438cd93c91840f0192b9dd"
 }
