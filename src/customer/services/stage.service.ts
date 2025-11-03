@@ -1,6 +1,6 @@
 import { CustomerMongoRepository } from '../../infra/db/repositories/customer.mongo.repository';
 import { ChangeStageDTO } from '../dtos/customer.dto';
-import { Stage, StageEnum } from '../enums/stage.enum';
+import { StageEnum } from '../enums/stage.enum';
 
 export class StageService {
   private readonly repo = new CustomerMongoRepository();
